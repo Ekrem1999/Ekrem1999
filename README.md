@@ -35,7 +35,7 @@
 
 На графике видно как мы классифицировали произвольную точку, видим что она окрасилась в соответствующий цвет.
 
-![Image alt](https://github.com/Shuregame/ML0/blob/master/algorithm%20kNN.png)
+
 
 
 
