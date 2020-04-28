@@ -5,7 +5,7 @@
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=$w(i,u)$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$w(i,u)$" title="$w(i,u)$" /></a> - вес (степень важности) i-го соседа объекта u, неотрицателен, не возрастает по i.
 
-
+<a href="https://www.codecogs.com/eqnedit.php?latex=\Gamma_y(u)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\Gamma_y(u)" title="\Gamma_y(u)" /></a> - оценка близости объекта 'u' к классу 'y'(оценка степени принадлежности).
 
 ## Гипотеза компактности: 
 Схожие объекты, как правило, лежат в одном классе.
@@ -35,7 +35,7 @@
 
 На графике видно как мы классифицировали произвольную точку, видим что она окрасилась в соответствующий цвет.
 
-
+![Image alt](https://github.com/Shuregame/ML0/blob/master/algorithm%20kNN.png)
 
 
 
@@ -157,6 +157,83 @@ kwNN <- function(xl, z, k,q)
 ![Image alt](https://github.com/Shuregame/ML0/blob/master/LOO.png)
 
 6.Проделываем для всех k, ответом будет k с наименьшей ошибкой.
+## Парзеновское окно
+
+Метод парзеновского окна использует весовую функцию w(i,u) как функцию не от ранга расстояния (как в KNN), а от расстояния. Зададим некоторый параметр h - ширина окна (напр. в двумерном пространстве это радиус круга).Бывают случаи, когда объект не лежит среди плотного распределения точек, в таком случае лучше сделать ширину с переменным значением.
+
+Рассмотри некоторую весовую функцию, которая принимает значение на промежутке [0,1], в остальных случаях 0.  На оси Ox будет ширина парзеновского окна, все что лежит вне окна не считаем. Внутри него лежат точки обучающей выборки.  
+
+Для того, чтобы сделать парзеновское окно с переменной шириной(пар. h), мы можем, например, поместить нашу 1 є K(r) на k+1 соседа, тогда для k+1 соседа вес будет нулевой, но для k-го будет лежать точно где-то в промежутке [0,1].
+<a href="url"><img src="https://github.com/Shuregame/ML0/blob/master/Parsen_dlya_gip.png" height="500" width="760" ></a>
+
+Для наглядности покажем два случая парзеновского окна:
+
+1)**С постоянной шириной**
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=a(u;X^l,h)&space;=&space;\arg&space;\max_{y&space;\epsilon&space;Y}&space;\sum_i:&space;y_n^{(i)}&space;=&space;K(\frac{\rho&space;(u,&space;x_n^{(i)})}{h})" target="_blank"><img src="https://latex.codecogs.com/gif.latex?a(u;X^l,h)&space;=&space;\arg&space;\max_{y&space;\epsilon&space;Y}&space;\sum_i:&space;y_n^{(i)}&space;=&space;K(\frac{\rho&space;(u,&space;x_n^{(i)})}{h})" title="a(u;X^l,h) = \arg \max_{y \epsilon Y} \sum_i: y_n^{(i)} = K(\frac{\rho (u, x_n^{(i)})}{h})" /></a>
+
+<a href="url"><img src="https://github.com/Shuregame/ML0/blob/master/Parsen_h.png" ></a>
+
+Сразу видно, что в случае с классификацией красной точки плотность распределения большая, а в случае с синим и вовсе не попала ни одна точка в окно ширины h.
+
+2)**С переменной шириной**
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=a(u;X^l,h)&space;=&space;\arg&space;\max_{y&space;\epsilon&space;Y}&space;\sum_i:&space;y_n^{(i)}&space;=&space;K(\frac{\rho&space;(u,&space;X_u^{(i)})}{&space;\rho(u,X_u^{k&plus;1})})" target="_blank"><img src="https://latex.codecogs.com/gif.latex?a(u;X^l,h)&space;=&space;\arg&space;\max_{y&space;\epsilon&space;Y}&space;\sum_i:&space;y_n^{(i)}&space;=&space;K(\frac{\rho&space;(u,&space;X_u^{(i)})}{&space;\rho(u,X_u^{k&plus;1})})" title="a(u;X^l,h) = \arg \max_{y \epsilon Y} \sum_i: y_n^{(i)} = K(\frac{\rho (u, X_u^{(i)})}{ \rho(u,X_u^{k+1})})" /></a>
+
+<a href="url"><img src="https://github.com/Shuregame/ML0/blob/master/Parsen_per_h.jpg" ></a>
+
+На графике выше хорошо видно, что для нас уже не имеет значение как далеко находятся объекты обучающей выборки, так как мы лишь задаем k-ближайших соседей, а точнее k+1, и окно становится нужной нам ширины. На последней графике взяли k=6.
+
+Рассмотри основные ядра:
+
+![Image alt](https://github.com/Shuregame/ML0/blob/master/Yadra.png)
+
+Возьмем для рассмотрения несколько примеров ядер:
+
+1)Ядро Епанечникова
+
+![Image alt](https://github.com/Shuregame/ML0/blob/master/epane4.png)
+
+
+![Image alt](https://github.com/Shuregame/ML0/blob/master/epane4_map.png)
+
+Реализация функции:
+
+```R
+epan <- function(r,h){
+  if(abs(r/h) <= 1){
+      return (3/4*(1-(r/h)^2))
+    } 
+   else {
+      return(0)
+  }
+}
+
+```
+
+2)Ядро Гаусса
+
+![Image alt](https://github.com/Shuregame/ML0/blob/master/Gaus_LOO.png)
+
+
+![Image alt](https://github.com/Shuregame/ML0/blob/master/Gaus_map.png)
+
+
+Для Гауссовского ядра можем построить полную карту классификации,так как Гауссовское ядро является финитным.
+
+Реализация функции:
+
+```R
+gaus <- function(r,h){
+ if(abs(r/h) <= 1){
+    return ( (2*pi)^(-1/2) * exp(-1/2 * (r/h)^2 ) )
+  } 
+  else {
+    return(0)
+  }
+}
+
+```
 
 ## Метод потенциальных функций
 
